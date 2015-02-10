@@ -1,14 +1,17 @@
 package com.gmail.hifzasakhi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-
 
 public class CalculatorActivity extends ActionBarActivity implements OnClickListener {
 
@@ -31,6 +34,15 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 	private Button divide;
 	private TextView text;
 	private Button exit;
+	private double ans = 0;
+	private double input = 0;
+	private String[] operators;
+	private Map<Button, String> btnMap;
+	private Map<Button, String> opMap;
+	private boolean isCleared;
+	private boolean hasOperator;
+	
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,8 +66,35 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
         text = (TextView)findViewById(R.id.textView);
         clear = (Button)findViewById(R.id.clear);
         exit = (Button)findViewById(R.id.button1);
+        isCleared = false;
+        //operator array
+        operators = new String[4];
+        operators[0] = "+";
+        operators[1] = "-";
+        operators[2] = "*";
+        operators[3] = "/";
         
-        //hooking up the listeners to the buttons
+        //operator mappings
+        opMap = new HashMap<Button, String>();
+        opMap.put(plus, "+");
+        opMap.put(minus, "-");
+        opMap.put(multiply, "*");
+        opMap.put(divide, "/");
+        
+        //digit mappings
+        btnMap = new HashMap<Button, String>();
+        btnMap.put(zero, "0");
+        btnMap.put(one, "1");
+        btnMap.put(two, "2");
+        btnMap.put(three, "3");
+        btnMap.put(four, "4");
+        btnMap.put(five, "5");
+        btnMap.put(six, "6");
+        btnMap.put(seven, "7");
+        btnMap.put(eight, "8");
+        btnMap.put(nine, "9");
+        
+        //hooking up the button listeners
         one.setOnClickListener(this);
         two.setOnClickListener(this);
         three.setOnClickListener(this);
@@ -95,51 +134,90 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
         }
         return super.onOptionsItemSelected(item);
     }
+    
+    /*private Double compute(String s) {
+    	int start = 0;
+    	double result = 0;
+    	for (int j=0; j < s.length(); j++) {
+    		String letter = "" + s.charAt(j);
+    		if (letter.equals("+")) {
+    			
+    		}
+    	}
+    	return null;
+    }*/
 
 
-	@Override
+    @Override
 	public void onClick(View v) {
 		if (v == clear) {
-			text.setText("");
-		} else if (v == one) {
-			text.setText(text.getText() + "1");
-		} else if (v == two) {
-			text.setText(text.getText() + "2");
-		} else if (v == three) {
-			text.setText(text.getText() + "3");
-		} else if (v == four) {
-			text.setText(text.getText() + "4");
-		} else if (v == five) {
-			text.setText(text.getText() + "5");
-		} else if (v == six) {
-			text.setText(text.getText() + "6");
-		} else if (v == seven) {
-			text.setText(text.getText() + "7");
-		} else if (v == eight) {
-			text.setText(text.getText() + "8");
-		} else if (v == nine) {
-			text.setText(text.getText() + "9");
-		} else if (v == zero) {
-			text.setText(text.getText() + "0");
-		} else if (v == decimal) {
-			text.setText(text.getText() + ".");
-		}  else if (v == plus) {
-			text.setText(text.getText() + "+");
-		} else if (v == minus) {
-			text.setText(text.getText() + "-");
-		} else if (v == multiply) {
-			text.setText(text.getText() + "x");
-		} else if (v == divide) {
-			text.setText(text.getText() + "/");
-		} else if (v == equals) {
-			String toFix = ((String)text.getText()).replaceAll("x", "*");
-			Double ans = Double.parseDouble(toFix);
-			text.setText(ans + "");
+			isCleared = true;
+			updateDisplay("0");
 		} else if (v == exit) {
-			//System.exit(0);
-			String toFix = ((String)text.getText()).replaceAll("x", "*");
-			Double ans = Double.parseDouble(toFix);
-			text.setText(ans + "");
+			System.exit(0);
+		} else if (v == equals) {
+//			String toFix = text.getText().toString().trim().replaceAll("x", "*");
+//			Double ans = Double.valueOf(toFix);
+//			text.setText(ans + "");
+			Double ans = Double.valueOf(Double.parseDouble("99 / 12") * 1.0);
+			updateDisplay(" " + ans);
+		
+		//digit was selected
+		} else if (btnMap.get(v) != null) {
+			String str = text.getText().toString();
+			if (isCleared && text.getText().toString().length() == 1) {
+				//changes the first digit from the cleared 0 to user input
+				isCleared = false;
+				updateDisplay(btnMap.get(v));
+				
+			 } else {
+				/*
+				 * If screen was not cleared prior to this digit,
+				 * then simply update the screen with the digit
+				 */
+				updateDisplay(text.getText() + btnMap.get(v));
+			}
+		/* After the if, we know for sure that the button pressed
+		 * was not a digit, =, clear, nor exit
+		 * but rather a decimal or a math operator	
+		 */
+		} else if (v == decimal) {
+			String str = text.getText().toString();
+			if ((str.charAt(str.length() - 1)) != '.') {
+				//makes sure we don't have 2 consecutive decimals
+				updateDisplay(text.getText() + ".");
+			}
+		} else {
+			String str = text.getText().toString();
+			
+			//we now know its an operator
+			
+			//can't put operator as the first character in display
+			if (str.length() == 0) {
+					
+					
+			/* Now check to see if 2 operators were selected consecutively.
+			 */
+			} else if ((str.charAt(str.length() - 1) + "" == opMap.get(plus)) ||
+					(str.charAt(str.length() - 1) + "" == opMap.get(minus)) ||
+					(str.charAt(str.length() - 1) + "" == opMap.get(multiply))||
+					(str.charAt(str.length() - 1) + "" == opMap.get(divide))) {
+						
+			    //removes the last operator from the displays
+			    //update display with the new (recent) operator 
+			    updateDisplay(str.substring(0, str.length() - 2) + "" + opMap.get(v));
+			 } else {
+				 
+				 //now, we have no restriction on placing the operator
+			   	updateDisplay(text.getText() + opMap.get(v));
+				
+		     }
+			
 		}
+	}
+			
+	
+	public void updateDisplay(String option) {
+		text.setText(option);
 	}
 }
