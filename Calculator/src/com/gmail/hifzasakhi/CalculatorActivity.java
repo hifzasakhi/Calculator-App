@@ -41,7 +41,11 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 	private Map<Button, String> opMap;
 	private boolean isCleared;
 	private boolean hasOperator;
-	
+	private double first;
+	private double second;
+	private int start;
+	private int end;
+	private View opView;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,9 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
         clear = (Button)findViewById(R.id.clear);
         exit = (Button)findViewById(R.id.button1);
         isCleared = false;
+        opView = null;
+        first = second = start = end = 0;
+        
         //operator array
         operators = new String[4];
         operators[0] = "+";
@@ -135,33 +142,25 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
         return super.onOptionsItemSelected(item);
     }
     
-    /*private Double compute(String s) {
-    	int start = 0;
-    	double result = 0;
-    	for (int j=0; j < s.length(); j++) {
-    		String letter = "" + s.charAt(j);
-    		if (letter.equals("+")) {
-    			
-    		}
-    	}
-    	return null;
-    }*/
-
 
     @Override
 	public void onClick(View v) {
 		if (v == clear) {
 			isCleared = true;
+			hasOperator = false;
+			opView = null;
+			first = 0;
+			start = 0;
+			end = 0;
+			second = 0;
 			updateDisplay("0");
 		} else if (v == exit) {
 			System.exit(0);
 		} else if (v == equals) {
-//			String toFix = text.getText().toString().trim().replaceAll("x", "*");
-//			Double ans = Double.valueOf(toFix);
-//			text.setText(ans + "");
-			Double ans = Double.valueOf(Double.parseDouble("99 / 12") * 1.0);
-			updateDisplay(" " + ans);
-		
+			if (hasOperator) {
+				 double ans = calculate(opView, first, start);
+				 updateDisplay(ans + "");
+			}
 		//digit was selected
 		} else if (btnMap.get(v) != null) {
 			String str = text.getText().toString();
@@ -203,11 +202,32 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 					(str.charAt(str.length() - 1) + "" == opMap.get(multiply))||
 					(str.charAt(str.length() - 1) + "" == opMap.get(divide))) {
 						
-			    //removes the last operator from the displays
-			    //update display with the new (recent) operator 
-			    updateDisplay(str.substring(0, str.length() - 2) + "" + opMap.get(v));
+			   /*
+			    * Since operator was selected, we need to store the left 
+			    * and right hand side of operator numbers in first and second
+			    * variables. we store the start location of the second number. 
+			    */
+				first = 1.0 * Double.valueOf(text.getText().toString());
+				//start refers to beginning location of second number after 
+				//an arithmetic operator
+				start = text.getText().toString().length();
+				hasOperator = true;
+				opView = v;
+				 //removes the last operator from the displays
+			    //update display with the new (recent) operator
+			    updateDisplay(str.substring(0, str.length() - 1) + "" + opMap.get(v));
+			 } else if (hasOperator) {
+				 double ans = calculate(opView, first, start);
+				 first = 1.0 * Double.valueOf(text.getText().toString());
+				 start = text.getText().toString().length();
+				 hasOperator = true;
+				 opView = v;
+				 updateDisplay(ans + "" + opMap.get(v));
 			 } else {
-				 
+				 first = 1.0 * Double.valueOf(text.getText().toString());
+				 start = text.getText().toString().length();
+				 hasOperator = true;
+				 opView = v;
 				 //now, we have no restriction on placing the operator
 			   	updateDisplay(text.getText() + opMap.get(v));
 				
@@ -216,7 +236,33 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 		}
 	}
 			
-	
+	private double calculate(View v, double first, int start) {
+		if (v == plus) {
+			end = text.getText().length();
+			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
+			double num = 0;
+			num = 1.0 * (first + second);
+			return num;
+		} else if (v == minus) {
+			end = text.getText().length();
+			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
+			double num = 0;
+			num = 1.0 * (first - second);
+			return num;
+		} else if (v == multiply) {
+			end = text.getText().length();
+			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
+			double num = 0;
+			num = 1.0 * (first * second);
+			return num;
+		} else {
+			end = text.getText().length();
+			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
+			double num = 0;
+			num = 1.0 * (first / second);
+			return num;
+		}
+	}
 	public void updateDisplay(String option) {
 		text.setText(option);
 	}
