@@ -41,6 +41,7 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 	private Map<Button, String> opMap;
 	private boolean isCleared;
 	private boolean hasOperator;
+	private boolean isEqual;
 	private double first;
 	private double second;
 	private int start;
@@ -71,6 +72,7 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
         clear = (Button)findViewById(R.id.clear);
         exit = (Button)findViewById(R.id.button1);
         isCleared = false;
+        isEqual = false;
         opView = null;
         first = second = start = end = 0;
         
@@ -160,7 +162,9 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 			if (hasOperator) {
 				 double ans = calculate(opView, first, start);
 				 updateDisplay(ans + "");
+				 hasOperator= false;
 			}
+			isEqual = true;
 		//digit was selected
 		} else if (btnMap.get(v) != null) {
 			String str = text.getText().toString();
@@ -169,6 +173,10 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 				isCleared = false;
 				updateDisplay(btnMap.get(v));
 				
+			 } else if (isEqual) {
+				isEqual = false; 
+				updateDisplay("");
+				updateDisplay(btnMap.get(v));
 			 } else {
 				/*
 				 * If screen was not cleared prior to this digit,
@@ -236,33 +244,28 @@ public class CalculatorActivity extends ActionBarActivity implements OnClickList
 		}
 	}
 			
-	private double calculate(View v, double first, int start) {
+	private void getDefaults() {
+		end = text.getText().length();
+		second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
+		double num = 0;
+	}
+	
+    private double calculate(View v, double first, int start) {
 		if (v == plus) {
-			end = text.getText().length();
-			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
-			double num = 0;
-			num = 1.0 * (first + second);
-			return num;
+			getDefaults(); 
+			return 1.0 * (first + second);
 		} else if (v == minus) {
-			end = text.getText().length();
-			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
-			double num = 0;
-			num = 1.0 * (first - second);
-			return num;
+			getDefaults(); 
+			return 1.0 * (first - second);
 		} else if (v == multiply) {
-			end = text.getText().length();
-			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
-			double num = 0;
-			num = 1.0 * (first * second);
-			return num;
+			getDefaults(); 
+			return 1.0 * (first * second);
 		} else {
-			end = text.getText().length();
-			second = Double.valueOf((text.getText()).toString().substring(start + 1, end));
-			double num = 0;
-			num = 1.0 * (first / second);
-			return num;
+			getDefaults(); 
+			return 1.0 * (first / second);
 		}
 	}
+    
 	public void updateDisplay(String option) {
 		text.setText(option);
 	}
