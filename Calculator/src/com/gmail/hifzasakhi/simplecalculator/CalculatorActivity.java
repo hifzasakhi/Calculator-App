@@ -1,4 +1,4 @@
-package com.gmail.hifzasakhi;
+package com.gmail.hifzasakhi.simplecalculator;
 
 import java.util.HashMap;
 import java.util.Map;
